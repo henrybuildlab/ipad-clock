@@ -128,6 +128,40 @@ body.clockonly #photo {
   .city,.date { font-size:10px; }
   #clockbar { height:70px; }
 }
+  
+/* Clock-first layout */
+#clockbar {
+  height: 40%;
+  background: rgba(5,12,20,0.94);
+}
+
+.clockcell {
+  padding: 12px 5px;
+}
+
+.time {
+  font-size: 7.5vw;
+  line-height: 1.2;
+}
+
+.city {
+  font-size: 2vw;
+  margin-bottom: 8px;
+}
+
+.date {
+  font-size: 1.8vw;
+  margin-top: 8px;
+}
+
+/* iPad portrait */
+@media (max-width: 480px) {
+  #clockbar { height: 35%; }
+  .time { font-size: 7vw; }
+  .city { font-size: 3vw; }
+  .date { font-size: 2.5vw; }
+}
+
 </style>
 </head>
 
