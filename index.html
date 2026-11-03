@@ -3,136 +3,271 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>iPad Mini Dual Clock</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Mini Clock & Frame</title>
 <style>
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  background: #101820;
-  color: white;
-  font-family: Arial, sans-serif;
+* { box-sizing:border-box; }
+html,body {
+  margin:0;width:100%;height:100%;
+  background:#101923;color:white;
+  font-family:Arial,sans-serif;
 }
-body { text-align: center; }
-.wrapper {
-  width: 100%;
-  min-height: 100%;
-  padding: 18px 12px;
+body { overflow:hidden; }
+#photo {
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  opacity:0;
 }
-.heading {
-  color: #9eacba;
-  font-size: 14px;
-  letter-spacing: 2px;
-  margin-bottom: 14px;
+#shade {
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(4,10,18,.48);
 }
-.city {
-  color: #b7c8d9;
-  font-size: 15px;
-  margin-bottom: 5px;
+#main {
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  display:table;text-align:center;
 }
-.clock {
-  font-size: 54px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  font-variant-numeric: tabular-nums;
+#middle {
+  display:table-cell;
+  vertical-align:middle;
+  padding:10px 10px 55px;
+}
+.label {
+  font-size:13px;
+  letter-spacing:2px;
+  color:#d5e3f0;
+}
+.time {
+  font-size:58px;
+  font-weight:bold;
+  letter-spacing:1px;
+  text-shadow:0 2px 8px #000;
 }
 .date {
-  font-size: 16px;
-  color: #b7c8d9;
-  margin-top: 8px;
+  font-size:15px;
+  color:#e0e6ec;
+  margin-top:5px;
 }
-.line {
-  height: 1px;
-  background: #394958;
-  margin: 20px auto;
-  width: 85%;
+.rule {
+  height:1px;
+  background:rgba(255,255,255,.3);
+  width:70%;
+  margin:18px auto;
 }
-.korea { color: #82d6ff; }
-.note {
-  margin-top: 22px;
-  color: #7f92a3;
-  font-size: 11px;
+.kr { color:#9fe0ff; }
+#controls {
+  position:absolute;bottom:0;left:0;
+  width:100%;text-align:center;
+  padding:8px 5px;
+  background:rgba(0,0,0,.6);
+  z-index:5;
 }
-@media (max-width: 480px) {
-  .clock { font-size: 42px; }
+button,.pick {
+  display:inline-block;
+  border:1px solid #8c9ba8;
+  border-radius:5px;
+  background:#27394a;
+  color:white;
+  padding:9px 10px;
+  font-size:13px;
+  margin:2px;
+}
+#picker {
+  position:absolute;
+  left:-9999px;
+}
+#status {
+  font-size:11px;
+  color:#e4e4e4;
+  margin-top:5px;
+}
+#showui {
+  position:absolute;right:5px;top:5px;
+  z-index:6;display:none;
+}
+body.hideui #controls { display:none; }
+body.hideui #showui { display:block; }
+body.hideui #middle { padding-bottom:10px; }
+@media(max-height:450px) {
+  .time { font-size:44px; }
+  .rule { margin:9px auto; }
+  .date { font-size:12px; }
+  #middle { padding-bottom:40px; }
 }
 </style>
 </head>
 <body>
-<div class="wrapper">
-  <div class="heading">DUAL WORLD CLOCK</div>
 
-  <div class="city">MICHIGAN · USA</div>
-  <div id="usTime" class="clock">--:--:--</div>
-  <div id="usDate" class="date">Loading...</div>
+<div id="photo"></div>
+<div id="shade"></div>
 
-  <div class="line"></div>
+<div id="main">
+  <div id="middle">
+    <div class="label">MICHIGAN · USA</div>
+    <div id="usTime" class="time">--:--:--</div>
+    <div id="usDate" class="date"></div>
 
-  <div class="city">SEOUL · KOREA</div>
-  <div id="krTime" class="clock korea">--:--:--</div>
-  <div id="krDate" class="date">Loading...</div>
+    <div class="rule"></div>
 
-  <div class="note">Automatic daylight saving time</div>
+    <div class="label">SEOUL · KOREA</div>
+    <div id="krTime" class="time kr">--:--:--</div>
+    <div id="krDate" class="date"></div>
+  </div>
+</div>
+
+<button id="showui" type="button">설정</button>
+
+<div id="controls">
+  <label class="pick" for="picker">사진 선택</label>
+  <input type="file" id="picker" accept="image/*" multiple>
+
+  <button id="toggle" type="button">시계만 보기</button>
+  <button id="fullscreen" type="button">전체화면 안내</button>
+  <button id="hide" type="button">버튼 숨기기</button>
+
+  <div id="status">
+    사진은 기기에서만 처리되고 서버로 전송되지 않아.
+  </div>
 </div>
 
 <script type="text/javascript">
 (function () {
-  var days = ["일", "월", "화", "수", "목", "금", "토"];
+  var days = ["일","월","화","수","목","금","토"];
 
   function two(n) {
     return n < 10 ? "0" + n : "" + n;
   }
 
-  function nthSunday(year, month, nth) {
-    var first = new Date(Date.UTC(year, month, 1));
-    var firstSunday = (7 - first.getUTCDay()) % 7 + 1;
-    return firstSunday + (nth - 1) * 7;
+  function nthSunday(y,m,n) {
+    var d = new Date(Date.UTC(y,m,1));
+    return (7-d.getUTCDay())%7+1+(n-1)*7;
   }
 
   function michiganOffset(now) {
-    var year = now.getUTCFullYear();
-    var march = nthSunday(year, 2, 2);
-    var november = nthSunday(year, 10, 1);
-
-    // DST starts at 2 AM EST = 07:00 UTC
-    var start = Date.UTC(year, 2, march, 7, 0, 0);
-
-    // DST ends at 2 AM EDT = 06:00 UTC
-    var end = Date.UTC(year, 10, november, 6, 0, 0);
-
-    return now.getTime() >= start && now.getTime() < end
-      ? -4 : -5;
+    var y = now.getUTCFullYear();
+    var start = Date.UTC(y,2,nthSunday(y,2,2),7);
+    var end = Date.UTC(y,10,nthSunday(y,10,1),6);
+    return now.getTime() >= start &&
+           now.getTime() < end ? -4 : -5;
   }
 
-  function updateOne(prefix, offset, now) {
-    var shifted = new Date(now.getTime() + offset * 3600000);
+  function update(prefix,offset,now) {
+    var d = new Date(now.getTime()+offset*3600000);
 
-    var hours = two(shifted.getUTCHours());
-    var minutes = two(shifted.getUTCMinutes());
-    var seconds = two(shifted.getUTCSeconds());
+    document.getElementById(prefix+"Time").innerHTML =
+      two(d.getUTCHours()) + ":" +
+      two(d.getUTCMinutes()) + ":" +
+      two(d.getUTCSeconds());
 
-    var year = shifted.getUTCFullYear();
-    var month = shifted.getUTCMonth() + 1;
-    var day = shifted.getUTCDate();
-    var weekday = days[shifted.getUTCDay()];
-
-    document.getElementById(prefix + "Time").innerHTML =
-      hours + ":" + minutes + ":" + seconds;
-
-    document.getElementById(prefix + "Date").innerHTML =
-      year + "년 " + month + "월 " + day + "일 (" + weekday + ")";
+    document.getElementById(prefix+"Date").innerHTML =
+      d.getUTCFullYear() + "년 " +
+      (d.getUTCMonth()+1) + "월 " +
+      d.getUTCDate() + "일 (" +
+      days[d.getUTCDay()] + ")";
   }
 
   function tick() {
     var now = new Date();
-    updateOne("us", michiganOffset(now), now);
-    updateOne("kr", 9, now);
+    update("us",michiganOffset(now),now);
+    update("kr",9,now);
   }
 
   tick();
-  setInterval(tick, 1000);
+  setInterval(tick,1000);
+
+  var urls = [];
+  var index = 0;
+  var showPhotos = true;
+  var photo = document.getElementById("photo");
+  var status = document.getElementById("status");
+
+  function showPhoto() {
+    if (!showPhotos || !urls.length) {
+      photo.style.opacity = "0";
+      return;
+    }
+    photo.style.backgroundImage =
+      'url("' + urls[index] + '")';
+    photo.style.opacity = "1";
+  }
+
+  function nextPhoto() {
+    if (urls.length > 1) {
+      index = (index+1)%urls.length;
+      showPhoto();
+    }
+  }
+
+  setInterval(nextPhoto,15000);
+
+  function loadFiles(files) {
+    if (!files || !files.length) return;
+
+    urls = [];
+    index = 0;
+
+    var limit = Math.min(files.length,30);
+    var i;
+
+    for (i=0;i<limit;i++) {
+      (function(file) {
+        if (file.type.indexOf("image/") !== 0) return;
+
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          urls.push(e.target.result);
+          showPhoto();
+          status.innerHTML =
+            urls.length + "장 불러옴 (최대 30장)";
+        };
+
+        reader.onerror = function() {
+          status.innerHTML =
+            "일부 사진을 읽지 못했어.";
+        };
+
+        reader.readAsDataURL(file);
+      })(files[i]);
+    }
+  }
+
+  document.getElementById("picker").onchange =
+    function() {
+      loadFiles(this.files);
+    };
+
+  document.getElementById("toggle").onclick =
+    function() {
+      showPhotos = !showPhotos;
+      showPhoto();
+      this.innerHTML = showPhotos ?
+        "시계만 보기" : "사진 함께 보기";
+    };
+
+  document.getElementById("hide").onclick =
+    function() {
+      document.body.className = "hideui";
+    };
+
+  document.getElementById("showui").onclick =
+    function() {
+      document.body.className = "";
+    };
+
+  document.getElementById("fullscreen").onclick =
+    function() {
+      alert(
+        'Safari 공유 버튼에서 "홈 화면에 추가"를 ' +
+        '선택한 뒤 홈 화면 아이콘으로 실행해 줘.'
+      );
+    };
 })();
 </script>
 </body>
