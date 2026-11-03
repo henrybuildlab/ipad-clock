@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>iPad Mini Dual Clock</title>
+<style>
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #101820;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+body { text-align: center; }
+.wrapper {
+  width: 100%;
+  min-height: 100%;
+  padding: 18px 12px;
+}
+.heading {
+  color: #9eacba;
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+.city {
+  color: #b7c8d9;
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+.clock {
+  font-size: 54px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.date {
+  font-size: 16px;
+  color: #b7c8d9;
+  margin-top: 8px;
+}
+.line {
+  height: 1px;
+  background: #394958;
+  margin: 20px auto;
+  width: 85%;
+}
+.korea { color: #82d6ff; }
+.note {
+  margin-top: 22px;
+  color: #7f92a3;
+  font-size: 11px;
+}
+@media (max-width: 480px) {
+  .clock { font-size: 42px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="heading">DUAL WORLD CLOCK</div>
+
+  <div class="city">MICHIGAN · USA</div>
+  <div id="usTime" class="clock">--:--:--</div>
+  <div id="usDate" class="date">Loading...</div>
+
+  <div class="line"></div>
+
+  <div class="city">SEOUL · KOREA</div>
+  <div id="krTime" class="clock korea">--:--:--</div>
+  <div id="krDate" class="date">Loading...</div>
+
+  <div class="note">Automatic daylight saving time</div>
+</div>
+
+<script type="text/javascript">
+(function () {
+  var days = ["일", "월", "화", "수", "목", "금", "토"];
+
+  function two(n) {
+    return n < 10 ? "0" + n : "" + n;
+  }
+
+  function nthSunday(year, month, nth) {
+    var first = new Date(Date.UTC(year, month, 1));
+    var firstSunday = (7 - first.getUTCDay()) % 7 + 1;
+    return firstSunday + (nth - 1) * 7;
+  }
+
+  function michiganOffset(now) {
+    var year = now.getUTCFullYear();
+    var march = nthSunday(year, 2, 2);
+    var november = nthSunday(year, 10, 1);
+
+    // DST starts at 2 AM EST = 07:00 UTC
+    var start = Date.UTC(year, 2, march, 7, 0, 0);
+
+    // DST ends at 2 AM EDT = 06:00 UTC
+    var end = Date.UTC(year, 10, november, 6, 0, 0);
+
+    return now.getTime() >= start && now.getTime() < end
+      ? -4 : -5;
+  }
+
+  function updateOne(prefix, offset, now) {
+    var shifted = new Date(now.getTime() + offset * 3600000);
+
+    var hours = two(shifted.getUTCHours());
+    var minutes = two(shifted.getUTCMinutes());
+    var seconds = two(shifted.getUTCSeconds());
+
+    var year = shifted.getUTCFullYear();
+    var month = shifted.getUTCMonth() + 1;
+    var day = shifted.getUTCDate();
+    var weekday = days[shifted.getUTCDay()];
+
+    document.getElementById(prefix + "Time").innerHTML =
+      hours + ":" + minutes + ":" + seconds;
+
+    document.getElementById(prefix + "Date").innerHTML =
+      year + "년 " + month + "월 " + day + "일 (" + weekday + ")";
+  }
+
+  function tick() {
+    var now = new Date();
+    updateOne("us", michiganOffset(now), now);
+    updateOne("kr", 9, now);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
